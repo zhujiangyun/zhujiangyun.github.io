@@ -7,17 +7,17 @@
   
   <title>ZhuJiangYun</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="OpenStack Stein发行版搭建测试（一）一、搭建环境准备  实体机准备：Z840,E5-2667 3.2GHz,64GB,Window7_64。 开启CPU虚拟化支持VTx及VTD。 准备Vmware_15.0.0测试环境。 安装CentOS_7.6.1810实验环境。  二、CentOS环境配置 参考文档：https://www.cnblogs.com/panwenbin-logs/p">
+  <meta name="description" content="OpenStack Stein发行版搭建测试（一）一、搭建环境准备  实体机准备：Z840,E5-2667 3.2GHz,64GB,Window7_64。 开启CPU虚拟化支持VTx及VTD。 准备Vmware_15.0.0测试环境。 安装CentOS_7.6.1810实验环境。 controller机器名为node1.controller。  二、CentOS环境配置 参考文档：https://">
 <meta property="og:type" content="article">
 <meta property="og:title" content="ZhuJiangYun">
 <meta property="og:url" content="http://yoursite.com/2019/09/17/190917_02/index.html">
 <meta property="og:site_name" content="ZhuJiangYun">
-<meta property="og:description" content="OpenStack Stein发行版搭建测试（一）一、搭建环境准备  实体机准备：Z840,E5-2667 3.2GHz,64GB,Window7_64。 开启CPU虚拟化支持VTx及VTD。 准备Vmware_15.0.0测试环境。 安装CentOS_7.6.1810实验环境。  二、CentOS环境配置 参考文档：https://www.cnblogs.com/panwenbin-logs/p">
+<meta property="og:description" content="OpenStack Stein发行版搭建测试（一）一、搭建环境准备  实体机准备：Z840,E5-2667 3.2GHz,64GB,Window7_64。 开启CPU虚拟化支持VTx及VTD。 准备Vmware_15.0.0测试环境。 安装CentOS_7.6.1810实验环境。 controller机器名为node1.controller。  二、CentOS环境配置 参考文档：https://">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-09-17T10:03:58.035Z">
+<meta property="og:updated_time" content="2019-09-19T10:00:12.728Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="ZhuJiangYun">
-<meta name="twitter:description" content="OpenStack Stein发行版搭建测试（一）一、搭建环境准备  实体机准备：Z840,E5-2667 3.2GHz,64GB,Window7_64。 开启CPU虚拟化支持VTx及VTD。 准备Vmware_15.0.0测试环境。 安装CentOS_7.6.1810实验环境。  二、CentOS环境配置 参考文档：https://www.cnblogs.com/panwenbin-logs/p">
+<meta name="twitter:description" content="OpenStack Stein发行版搭建测试（一）一、搭建环境准备  实体机准备：Z840,E5-2667 3.2GHz,64GB,Window7_64。 开启CPU虚拟化支持VTx及VTD。 准备Vmware_15.0.0测试环境。 安装CentOS_7.6.1810实验环境。 controller机器名为node1.controller。  二、CentOS环境配置 参考文档：https://">
   
     <link rel="alternate" href="/atom.xml" title="ZhuJiangYun" type="application/atom+xml">
   
@@ -82,6 +82,7 @@
 <li>开启CPU虚拟化支持VTx及VTD。</li>
 <li>准备Vmware_15.0.0测试环境。</li>
 <li>安装CentOS_7.6.1810实验环境。</li>
+<li>controller机器名为node1.controller。</li>
 </ol>
 <p><strong>二、CentOS环境配置</strong></p>
 <p><em>参考文档：<a href="https://www.cnblogs.com/panwenbin-logs/p/8410551.html" target="_blank" rel="noopener">https://www.cnblogs.com/panwenbin-logs/p/8410551.html</a></em></p>
@@ -99,14 +100,14 @@ yum install centos-release-openstack-stein
 yum upgrade
 reboot
 安装OpenStack客户端
-yum install python-openstackclient</code></pre><p>四、安装配置数据库服务（MySQL）</p>
+yum install python-openstackclient</code></pre><p><strong>四、安装配置数据库服务（MySQL）</strong></p>
 <pre><code>安装数据库
 yum install mariadb mariadb-server python2-PyMySQL
 新建一个配置文件，写入【mysqld】字段
 vim /etc/my.cnf.d/openstack.cnf
 
 [mysqld]
-bind-address = 10.0.0.11
+bind-address = 192.168.1.101
 
 default-storage-engine = innodb
 innodb_file_per_table = on
@@ -118,7 +119,7 @@ character-set-server = utf8
 systemctl enable mariadb.service
 systemctl start mariadb.service
 安装数据库安全服务
-mysql_secure_installation</code></pre><p>五、安装消息队列服务（RabbitMQ）</p>
+mysql_secure_installation</code></pre><p><strong>五、安装消息队列服务（RabbitMQ）</strong></p>
 <pre><code>安装消息队列
 yum install rabbitmq-server
 启动消息队列服务并设置为随系统自启动
@@ -131,8 +132,82 @@ rabbitmqctl set_permissions openstack &quot;.*&quot; &quot;.*&quot; &quot;.*&quo
 
 使用 rabbitmq_management 插件实现 web 管理
 rabbitmq-plugins enable rabbitmq_management
-systemctl restart rabbitmq-server.service</code></pre><p>访问RabbitMQ,访问地址是<a href="http://192.168.1.101:15672/,默认用户名密码都是guest" target="_blank" rel="noopener">http://192.168.1.101:15672/,默认用户名密码都是guest</a><br>进入Web管理界面，在Admin页签，设置openstack用户的密码为123456，并加入Admin用户组，检查openstack用户是否可以正常登陆。</p>
+systemctl restart rabbitmq-server.service</code></pre><p>访问RabbitMQ，访问地址是 <a href="http://192.168.1.101:15672/" target="_blank" rel="noopener">http://192.168.1.101:15672/</a> ，默认用户名密码都是guest。<br>进入Web管理界面，在Admin页签，设置openstack用户的密码为123456，并加入Admin用户组，检查openstack用户是否可以正常登陆。</p>
+<p><strong>六、安装Memcached服务</strong></p>
+<pre><code>安装Memcached服务
+yum install memcached python-memcached
+修改/etc/sysconfig/memcached配置文件
+OPTIONS=&quot;-l 192.168.1.101,::1,node1.controller&quot;
+启动Memcached服务并设置为随系统自启动
+systemctl enable memcached.service
+systemctl start memcached.service</code></pre><p><strong>七、安装Etcd服务</strong></p>
+<pre><code>安装Etcd服务
+yum install etcd
+修改/etc/etcd/etcd.conf配置文件，指定服务IP
+#[Member]
+ETCD_DATA_DIR=&quot;/var/lib/etcd/default.etcd&quot;
+ETCD_LISTEN_PEER_URLS=&quot;http://192.168.1.101:2380&quot;
+ETCD_LISTEN_CLIENT_URLS=&quot;http://192.168.1.101:2379&quot;
+ETCD_NAME=&quot;node1.controller&quot;
+#[Clustering]
+ETCD_INITIAL_ADVERTISE_PEER_URLS=&quot;http://192.168.1.101:2380&quot;
+ETCD_ADVERTISE_CLIENT_URLS=&quot;http://192.168.1.101:2379&quot;
+ETCD_INITIAL_CLUSTER=&quot;controller=http://192.168.1.101:2380&quot;
+ETCD_INITIAL_CLUSTER_TOKEN=&quot;etcd-cluster-01&quot;
+ETCD_INITIAL_CLUSTER_STATE=&quot;new&quot;
+启动Etcd服务并设置为随系统自启动
+systemctl enable etcd
+systemctl start etcd</code></pre><p>八、安装身份认证服务keystone</p>
+<pre><code>配置数据库
+mysql -u root -p
+MariaDB [(none)]&gt; CREATE DATABASE keystone;
+MariaDB [(none)]&gt; GRANT ALL PRIVILEGES ON keystone.* TO &apos;keystone&apos;@&apos;localhost&apos; IDENTIFIED BY &apos;123456&apos;;
+MariaDB [(none)]&gt; GRANT ALL PRIVILEGES ON keystone.* TO &apos;keystone&apos;@&apos;%&apos; IDENTIFIED BY &apos;123456&apos;;
+安装keystone服务
+yum install openstack-keystone httpd mod_wsgi
+修改/etc/keystone/keystone.conf配置文件
+在[database]字段，配置访问链接
+connection = mysql://keystone:123456@node1.controller/keystone
+在[token]字段，配置访问方式
+provider = fernet
+初始化keystone身份认证服务数据库
+su -s /bin/sh -c &quot;keystone-manage db_sync&quot; keystone
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+keystone-manage bootstrap --bootstrap-password 123456 \
+--bootstrap-admin-url http://node1.controller:5000/v3/ \
+--bootstrap-internal-url http://node1.controller:5000/v3/ \
+--bootstrap-public-url http://node1.controller:5000/v3/ \
+--bootstrap-region-id RegionOne
 
+配置Apache HTTP服务
+修改/etc/httpd/conf/httpd.conf配置文件，配置服务端机器名
+ServerName node1.controller
+为/usr/share/keystone/wsgi-keystone.conf创建一个链接
+ln -s /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
+启动Apache HTTP服务并设置为随系统自启动
+systemctl enable httpd.service
+systemctl start httpd.service
+配置用户环境
+export OS_USERNAME=admin
+export OS_PASSWORD=123456
+export OS_PROJECT_NAME=admin
+export OS_USER_DOMAIN_NAME=Default
+export OS_PROJECT_DOMAIN_NAME=Default
+export OS_AUTH_URL=http://node1.controller:5000/v3
+export OS_IDENTITY_API_VERSION=3</code></pre><p><strong>九、创建keystone身份认证服务实体</strong></p>
+<pre><code>测试创建一个新的Domain
+openstack domain create --description &quot;Domain&quot; example
+在default域中创建一个service项目
+openstack project create --domain default --description &quot;Service Project&quot; service
+在default域中创建一个myporject项目
+openstack project create --domain default --description &quot;Demo Project&quot; myproject
+在default域中创建一个myuser用户（密码123456）
+openstack user create --domain default --password-prompt myuser
+创建一个myrole角色
+openstack role create myrole
+将default域中myproject项目myuser用户指定为myrole角色
+openstack role add --project myproject --user myuser myrole</code></pre>
       
     </div>
     <footer class="article-footer">
